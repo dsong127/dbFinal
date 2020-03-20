@@ -35,8 +35,9 @@ def main():
             #         .format("'"+parsed_case['case_number']+"'", parsed_case['balance'], "'"+parsed_case['location']+"'", "'"+parsed_case['violation_type']+"'")
             #     cur.execute(cmd)
             #     added_list.append(parsed_case['case_number'])
-
-            cmd =
+            for charge in parsed_case['charges']:
+                cmd = "INSERT INTO charges(case_number, eligibility, convicted) VALUES({}, {}, {})".format("'"+parsed_case['case_number']+"'", "'"+charge['eligibility']+"'", "'"+charge['convicted']+"'")
+                cur.execute(cmd)
 
 
 
