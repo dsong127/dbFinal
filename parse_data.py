@@ -1,44 +1,69 @@
 import json
 import os
-
-class Case(dict):
-    def __init__(self, person_id, case_number, balance, birth_year, location, violation_type, charges):
-        self['person_id'] = person_id
-        self['case_number'] = case_number
-        self['balance'] = balance
-        self['birth_year'] = birth_year
-        self['location'] = location
-        self['violation_type'] = violation_type
-        self['charges'] = charges
-
-class Charge(dict):
-    def __init__(self, violation_type, eligibility, expunged, convicted):
-        self['violation_type'] = violation_type
-        self['eligibility'] = eligibility
-        self['expunged'] = expunged
-        self['convicted'] = convicted
+from datetime import datetime
 
 
 def parse_data():
     data_path = os.path.join(os.getcwd(), 'records_data')
 
-    data = []
+    jsonFiles= []
+    parsed_cases = []
+
 
     for dataFile in os.listdir(data_path):
         with open(os.path.join(data_path, dataFile), 'r') as f:
-            data.append(json.load(f))
+            jsonFiles.append(json.load(f))
 
-    for d in data:
-        if(len(d['cases'])) == 0:
+
+    for i, record in enumerate(jsonFiles):
+
+        if(len(record['cases'])) == 0:
             # If file contains no data, skip to next file
             continue
 
+        now = datetime.now()
+        # print('file {}'.format(i))
+
+        for i, case in enumerate(record['cases']):
+            # print('case {}'.format(i))
+
+            person_id = case['name']
+            age = now.year - case['birth_year']
+
+
+            balance = case['balance_due']
+            case_number = case['case_number']
+            location = case['location']
+            violation_type = case['violation_type']
 
 
 
+            charges = []
+            for i, charge in enumerate(case['charges']):
+                # print('charge {}'.format(i))
+                try:
+                    e1= charge['expungement_result']
+                    e2 = e1['type_eligibility']
+                    eligibility = e2['status']
+                    convic= charge['disposition']
 
+                    convicted = convic['status']
 
+                    charge = {'eligibility': eligibility, 'convicted': convicted}
+                    charges.append(charge)
+                except:
+                    continue
 
+            case = {'person_id': person_id, 'age': age, 'case_number': case_number,
+                    'balance': balance, 'location': location, 'violation_type': violation_type,
+                    'charges': charges}
+
+            parsed_cases.append(case)
+            # print(case)
+
+            # print('---------------------------')
+
+    return parsed_cases
 
 
 
